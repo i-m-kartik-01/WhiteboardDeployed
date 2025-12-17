@@ -11,7 +11,7 @@ const FRONTEND_URL = process.env.FRONTEND_URL
 require("dotenv").config();
 
 const app = express();
-const PORT = process.env;
+const PORT = process.env.PORT;
 
 /* =========================
    EXPRESS MIDDLEWARE

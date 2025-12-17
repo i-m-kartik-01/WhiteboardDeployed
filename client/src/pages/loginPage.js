@@ -1,53 +1,117 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
+import "./loginPage.css";
 
-function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+const LoginPage = () => {
+  const [isLogin, setIsLogin] = useState(true);
+  const [theme, setTheme] = useState("light");
+  const [formData, setFormData] = useState({
+    username: "",
+    name: "",
+    email: "",
+    password: "",
+  });
+
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const toggleTheme = () => {
+    setTheme(theme === "light" ? "dark" : "light");
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const res = await api.post("/users/login", {
-        email,
-        password,
-      });
+      if (isLogin) {
+        // LOGIN API
+        const res = await api.post("/users/login", {
+          email: formData.email,
+          password: formData.password,
+        });
 
-      // store access token
-      localStorage.setItem("accessToken", res.data.accessToken);
+        localStorage.setItem("accessToken", res.data.accessToken);
+        navigate("/profile");
+      } else {
+        // REGISTER API
+        await api.post("/users/register", {
+          username: formData.username,
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        });
 
-      // go to profile/dashboard
-      navigate("/profile");
+        alert("Registration successful. Please login.");
+        setIsLogin(true);
+      }
     } catch (err) {
-      console.error(err);
-      alert(err.response?.data?.message || "Login failed");
+      alert(err.response?.data?.message || "Something went wrong");
     }
   };
 
   return (
-    <form onSubmit={handleLogin}>
-      <h2>Login</h2>
+    <div className={`auth-container ${theme}`}>
+      <div className="auth-card">
+        <div className="theme-toggle">
+          <button onClick={toggleTheme}>
+            {theme === "light" ? "🌙 Dark" : "☀️ Light"}
+          </button>
+        </div>
 
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
+        <h2>{isLogin ? "Login" : "Register"}</h2>
 
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
+        <form onSubmit={handleSubmit}>
+          {!isLogin && (
+            <>
+              <input
+                name="username"
+                placeholder="Username"
+                onChange={handleChange}
+                required
+              />
+              <input
+                name="name"
+                placeholder="Full Name"
+                onChange={handleChange}
+                required
+              />
+            </>
+          )}
 
-      <button type="submit">Login</button>
-    </form>
+          <input
+            name="email"
+            type="email"
+            placeholder="Email"
+            onChange={handleChange}
+            required
+          />
+
+          <input
+            name="password"
+            type="password"
+            placeholder="Password"
+            onChange={handleChange}
+            required
+          />
+
+          <button type="submit">
+            {isLogin ? "Login" : "Register"}
+          </button>
+        </form>
+
+        <p className="switch-text">
+          {isLogin ? "Don't have an account?" : "Already have an account?"}
+          <span onClick={() => setIsLogin(!isLogin)}>
+            {isLogin ? " Register" : " Login"}
+          </span>
+        </p>
+      </div>
+    </div>
   );
-}
+};
 
 export default LoginPage;

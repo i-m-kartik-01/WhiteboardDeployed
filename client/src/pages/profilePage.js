@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
+import "./profilePage.css";
 
 function ProfilePage() {
   const [canvases, setCanvases] = useState([]);
   const [newTitle, setNewTitle] = useState("");
-  const [shareEmails, setShareEmails] = useState({}); // canvasId -> email
-  const navigate = useNavigate();
+  const [shareEmails, setShareEmails] = useState({});
+  const [theme, setTheme] = useState("light");
 
-  /* ================= FETCH CANVASES ================= */
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchCanvases();
@@ -18,12 +19,10 @@ function ProfilePage() {
     try {
       const res = await api.get("/canvas");
       setCanvases(res.data);
-    } catch (err) {
+    } catch {
       alert("Failed to load canvases");
     }
   };
-
-  /* ================= CREATE CANVAS ================= */
 
   const createCanvas = async () => {
     if (!newTitle.trim()) {
@@ -35,80 +34,71 @@ function ProfilePage() {
       const res = await api.post("/canvas/createCanvas", {
         title: newTitle,
       });
-
       navigate(`/canvas/${res.data._id}`);
-    } catch (err) {
+    } catch {
       alert("Failed to create canvas");
     }
   };
 
-  /* ================= SHARE CANVAS ================= */
-
   const shareCanvas = async (canvasId, email) => {
-    if (!email || !email.trim()) {
+    if (!email?.trim()) {
       alert("Email required");
       return;
     }
 
     try {
-      await api.put("/canvas/shareCanvas", {
-        canvasId,
-        email,
-      });
+      await api.put("/canvas/shareCanvas", { canvasId, email });
+      alert("Team member added");
 
-      alert("Canvas shared successfully");
-
-      // Clear input after success
       setShareEmails((prev) => ({
         ...prev,
         [canvasId]: "",
       }));
     } catch (err) {
-      alert(err.response?.data?.message || "Share failed");
+      alert(err.response?.data?.message || "Failed to add team member");
     }
   };
 
-  /* ================= UI ================= */
-
   return (
-    <div style={{ padding: "1rem" }}>
-      <h2>Your Canvases</h2>
+    <div className={`profile-container ${theme}`}>
+      <header className="profile-header">
+        <h2>Your Canvases</h2>
+        <button
+          className="theme-btn"
+          onClick={() =>
+            setTheme(theme === "light" ? "dark" : "light")
+          }
+        >
+          Switch Theme
+        </button>
+      </header>
 
-      {/* CREATE CANVAS */}
-      <div style={{ marginBottom: "1rem" }}>
+      <div className="create-canvas">
         <input
           type="text"
-          placeholder="Canvas title"
+          placeholder="New canvas title"
           value={newTitle}
           onChange={(e) => setNewTitle(e.target.value)}
         />
         <button onClick={createCanvas}>Create Canvas</button>
       </div>
 
-      {/* CANVAS LIST */}
-      <ul style={{ listStyle: "none", padding: 0 }}>
+      <div className="canvas-grid">
         {canvases.map((c) => (
-          <li
-            key={c._id}
-            style={{
-              border: "1px solid #ccc",
-              padding: "0.75rem",
-              marginBottom: "0.75rem",
-            }}
-          >
-            <strong>{c.title}</strong>
+          <div className="canvas-card" key={c._id}>
+            <h3>{c.title}</h3>
 
-            <div style={{ marginTop: "0.5rem" }}>
-              <button onClick={() => navigate(`/canvas/${c._id}`)}>
-                Open
-              </button>
-            </div>
+            <button
+              className="primary-btn"
+              onClick={() => navigate(`/canvas/${c._id}`)}
+            >
+              Start Collab
+            </button>
 
-            {/* SHARE SECTION */}
-            <div style={{ marginTop: "0.5rem" }}>
+            <div className="share-section">
               <input
                 type="email"
-                placeholder="Share with email"
+                placeholder="Add team member email"
                 value={shareEmails[c._id] || ""}
                 onChange={(e) =>
                   setShareEmails((prev) => ({
@@ -117,14 +107,18 @@ function ProfilePage() {
                   }))
                 }
               />
-              <button onClick={() => shareCanvas(c._id, shareEmails[c._id])}>
-                Share
+              <button
+                className="secondary-btn"
+                onClick={() =>
+                  shareCanvas(c._id, shareEmails[c._id])
+                }
+              >
+                Add New Team Member
               </button>
-
             </div>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }

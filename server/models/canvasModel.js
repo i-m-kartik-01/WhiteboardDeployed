@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const User = require("./UserModel"); // adjust path if needed
+const User = require("./userModel"); // adjust path if needed
 
 const CanvasSchema = new mongoose.Schema(
   {

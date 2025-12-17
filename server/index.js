@@ -7,18 +7,18 @@ const { Server } = require("socket.io");
 const connectDB = require("./connection");
 const userRouter = require("./routes/userRoutes");
 const canvasRouter = require("./routes/canvasRoutes");
-
+const FRONTEND_URL = process.env.FRONTEND_URL
 require("dotenv").config();
 
 const app = express();
-const PORT = 5003;
+const PORT = process.env;
 
 /* =========================
    EXPRESS MIDDLEWARE
    ========================= */
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: FRONTEND_URL,
     credentials: true,
   })
 );
@@ -38,7 +38,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: FRONTEND_URL,
     methods: ["GET", "POST"],
     credentials: true,
   },

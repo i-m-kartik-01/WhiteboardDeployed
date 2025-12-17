@@ -7,7 +7,6 @@ const boardContext = createContext({
     elements: [],
     history: [[]],
     index: 0,
-    canvasId: "",
     
     boardMouseDownHandler: () => {},
     changeToolHandler: () => {},

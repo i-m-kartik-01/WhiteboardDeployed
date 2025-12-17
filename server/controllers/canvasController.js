@@ -1,6 +1,6 @@
 const Canvas = require("../models/canvasModel");
 // const { create } = require("../models/UserModel");
-const User = require("../models/UserModel");
+const User = require("../models/userModel");
 
 const getAllCanvas = async (req, res) => {
     const userId = req.userId;
